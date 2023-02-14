@@ -4,7 +4,7 @@ services:
   xandikos:
     image: ghcr.io/jelmer/xandikos
     ports:
-      - 8000:8000
+      - 8432:8000
     volumes:
       - .:/data
     restart: unless-stopped
