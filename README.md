@@ -27,10 +27,21 @@ git clone git@github.com/parham-alvani/calendar
 
 Also, you need to add the following information into your contacts/calendar repository:
 
-```
+```ini
 [user]
   name = Parham Alvani
   email = parham.alvani@gmail.com
+```
+
+## Using it with [`khal`](https://github.com/pimutils/khal) and [`khard`](https://github.com/lucc/khard)
+
+For putting `khal` and `khard` into work you can use the following symbolic links:
+
+```bash
+cd /home/parham/Documents/Git/parham/parham-alvani
+
+ln -s ~/Downloads/xandikos/user/contacts/addressbook addressbook
+ln -s ~/Downloads/xandikos/user/calendars/calendar calendar
 ```
 
 ## Repositories
