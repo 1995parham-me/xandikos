@@ -17,12 +17,12 @@ cd user
 cd contacts
 rm -Rf .git
 rm -Rf addressbook
-git clone git@github.com/parham-alvani/addressbook
+git clone git@github.com:parham-alvani/addressbook
 
 cd calendars
 rm -Rf .git
 rm -Rf calendar
-git clone git@github.com/parham-alvani/calendar
+git clone git@github.com:parham-alvani/calendar
 ```
 
 Also, you need to add the following information into your contacts/calendar repository:
