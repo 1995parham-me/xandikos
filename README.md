@@ -1,4 +1,4 @@
-# Xandikos in Action
+# [Xandikos](https://github.com/jelmer/xandikos) in Action
 
 ## Introduction
 
