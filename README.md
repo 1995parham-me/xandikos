@@ -38,7 +38,8 @@ Also, you need to add the following information into your contacts/calendar git 
   email = parham.alvani@gmail.com
 ```
 
-With these information you will have meaninigful commits on Github.
+Xandikos automatically creates commits and with these information you will have commits with your name and email address
+that can be pushed on GitHub without any issues.
 
 ## Using it with [`khal`](https://github.com/pimutils/khal) and [`khard`](https://github.com/lucc/khard)
 
