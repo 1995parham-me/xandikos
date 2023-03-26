@@ -7,11 +7,16 @@ This repository contains the required configuration for using it.
 
 ## How to?
 
-First you need to have Docker installed and then run Xandikos:
+First you need to have Docker installed and then run Xandikos with the provided `docker-compsoe`:
 
 ```bash
 docker compose up -d
+```
 
+After that it automatically creates required file structure and you need to replace its bare
+repositories with your actual repositories:
+
+```bash
 cd user
 
 cd contacts
@@ -25,7 +30,7 @@ rm -Rf calendar
 git clone git@github.com:parham-alvani/calendar
 ```
 
-Also, you need to add the following information into your contacts/calendar repository:
+Also, you need to add the following information into your contacts/calendar git repository:
 
 ```ini
 [user]
@@ -33,9 +38,12 @@ Also, you need to add the following information into your contacts/calendar repo
   email = parham.alvani@gmail.com
 ```
 
+With these information you will have meaninigful commits on Github.
+
 ## Using it with [`khal`](https://github.com/pimutils/khal) and [`khard`](https://github.com/lucc/khard)
 
-For putting `khal` and `khard` into work you can use the following symbolic links:
+For putting `khal` and `khard` into work when they configured to use another address as their repositoriy,
+you can use the following symbolic links:
 
 ```bash
 cd /home/parham/Documents/Git/parham/parham-alvani
