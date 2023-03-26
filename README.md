@@ -13,7 +13,7 @@ First you need to have Docker installed and then run Xandikos with the provided 
 docker compose up -d
 ```
 
-After that it automatically creates required file structure and you need to replace its bare
+After that it automatically creates required file structure, and you need to replace its bare
 repositories with your actual repositories:
 
 ```bash
@@ -38,12 +38,12 @@ Also, you need to add the following information into your contacts/calendar git 
   email = parham.alvani@gmail.com
 ```
 
-Xandikos automatically creates commits and with these information you will have commits with your name and email address
+Xandikos automatically creates commits and with this information you will have commits with your name and email address
 that can be pushed on GitHub without any issues.
 
 ## Using it with [`khal`](https://github.com/pimutils/khal) and [`khard`](https://github.com/lucc/khard)
 
-For putting `khal` and `khard` into work when they configured to use another address as their repositoriy,
+For putting `khal` and `khard` into work when they configured to use another address as their repositories,
 you can use the following symbolic links:
 
 ```bash
