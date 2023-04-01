@@ -1,4 +1,5 @@
-# [Xandikos](https://github.com/jelmer/xandikos) in Action
+<h1 align="center"> Xandikos in Action </h1>
+<h6 align="center"> Calendar and Contacts in Git without any 3rd-party services </h6>
 
 ## Introduction
 
