@@ -25,6 +25,8 @@ rm -Rf .git
 rm -Rf addressbook
 git clone git@github.com:parham-alvani/addressbook
 
+cd ..
+
 cd calendars
 rm -Rf .git
 rm -Rf calendar
