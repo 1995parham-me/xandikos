@@ -52,6 +52,9 @@ you can use the following symbolic links:
 ```bash
 cd /home/parham/Documents/Git/parham/parham-alvani
 
+rm -rf addressbook
+rm -rf calendar
+
 ln -s ~/Downloads/xandikos/user/contacts/addressbook addressbook
 ln -s ~/Downloads/xandikos/user/calendars/calendar calendar
 ```
