@@ -1,5 +1,3 @@
-version: "3.4"
-
 services:
   xandikos:
     image: ghcr.io/jelmer/xandikos
