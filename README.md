@@ -63,6 +63,12 @@ ln -s ~/Downloads/xandikos/user/contacts/addressbook addressbook
 ln -s ~/Downloads/xandikos/user/calendars/calendar calendar
 ```
 
+## Regenerate HTTPS Certificates
+
+```bash
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 3650 -nodes -subj "/C=IR/ST=Tehran/L=Tehran/O=1995parham-me/OU=davx/CN=davx.infra.1995parham.me"
+```
+
 ## Repositories
 
 - [addressbook](https://github.com/parham-alvani/addressbook)
