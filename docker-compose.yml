@@ -4,8 +4,8 @@ services:
     ports:
       - 4432:443
     volumes:
-      - davx.infra.1995parham.me:/etc/nginx/ssl/davx.infra.1995parham.me
-      - nginx.conf:/etc/nginx/nginx.conf
+      - ./davx.infra.1995parham.me:/etc/nginx/ssl/davx.infra.1995parham.me
+      - ./nginx.conf:/etc/nginx/nginx.conf
     restart: unless-stopped
   xandikos:
     image: ghcr.io/jelmer/xandikos
