@@ -63,11 +63,16 @@ ln -s ~/Downloads/xandikos/user/contacts/addressbook addressbook
 ln -s ~/Downloads/xandikos/user/calendars/calendar calendar
 ```
 
-## Regenerate HTTPS Certificates
+## Regenerate TLS Certificates
+
+macOS required TLS for its CardDav account, so we need to support HTTPS over Xandikos.
+The main step here is to generate the certificate using the following command:
 
 ```bash
 openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 3650 -nodes -subj "/C=IR/ST=Tehran/L=Tehran/O=1995parham-me/OU=davx/CN=davx.infra.1995parham.me"
 ```
+
+[Reference](https://stackoverflow.com/questions/10175812/how-to-generate-a-self-signed-ssl-certificate-using-openssl)
 
 ## Repositories
 
