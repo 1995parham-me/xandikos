@@ -1,6 +1,10 @@
 <h1 align="center"> Xandikos in Action </h1>
 <h6 align="center"> Calendar and Contacts in Git without any 3rd-party services </h6>
 
+<p align="center">
+    <img src=".github/logo.png" alt="logo" />
+</p>
+
 ## Introduction
 
 [Xandikos](https://github.com/jelmer/xandikos) is a CalDAV/CardDAV server that I use for managing my contacts and calendar events.
