@@ -2,7 +2,7 @@
 <h6 align="center"> Calendar and Contacts in Git without any 3rd-party services </h6>
 
 <p align="center">
-    <img src=".github/logo.png" alt="logo" />
+    <img src=".github/logo.png" alt="logo" height="200px" />
 </p>
 
 ## Introduction
