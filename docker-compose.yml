@@ -1,17 +1,18 @@
 services:
   # Angie /ˈendʒi/ is an efficient, powerful, and scalable web server that was forked from nginx.
+  # https://angie.software
   nginx:
     image: docker.angie.software/angie
     ports:
       - 4432:443
     volumes:
       - ./davx.infra.1995parham.me:/etc/nginx/ssl/davx.infra.1995parham.me
-      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx.conf:/etc/angie/angie.conf
     restart: unless-stopped
   xandikos:
     image: ghcr.io/jelmer/xandikos
     ports:
       - 8432:8000
     volumes:
-      - .:/data
+      - .:/data:rw
     restart: unless-stopped
