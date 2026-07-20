@@ -1,0 +1,105 @@
+<h1 align="center"> Xandikos Troubleshooting </h1>
+<h6 align="center"> Fixes for problems seen in production </h6>
+
+## `500` on `REPORT` / DAVx5 sync stuck (zlib errors)
+
+### Symptom
+
+- Clients (DAVx5, macOS Contacts, `khard`) fail to sync; DAVx5 sync gets **stuck** and retries forever.
+- `nginx` logs show `500` on `REPORT /user/contacts/addressbook/` (or the calendar equivalent):
+
+  ```bash
+  docker logs --since 30m xandikos-nginx-1 | grep '" 500 '
+  ```
+
+- The `xandikos` container logs show **varying** `zlib` errors while reading git objects:
+
+  ```
+  zlib.error: Error -3 while decompressing data: invalid stored block lengths
+  zlib.error: Error -3 while decompressing data: invalid code lengths set
+  zlib.error: ... incorrect header check / decompressed data does not match expected size
+  ```
+
+  The traceback ends in `dulwich/pack.py` (`resolve_object` → `get_object_at` → `read_zlib_chunks`).
+
+### Root cause
+
+A **dulwich concurrency bug reading from the git packfile**. Under a client's parallel/streaming
+reads, dulwich's single shared pack file handle (`PackData._file` seek position) gets raced between
+overlapping requests, so it decompresses bytes at the wrong offset → the (varying) `zlib` errors.
+
+Key facts to avoid chasing the wrong thing:
+
+- **The data on disk is NOT corrupt.** Verify: `git fsck --full` is clean and
+  `git cat-file --batch-all-objects --batch --unordered 2>err >/dev/null; wc -l err` reports 0 errors.
+- It is a **transient concurrency** fault, so it is essentially **not reproducible** with local
+  `curl` (even 150-way parallel) — it needs the real client's streaming pattern.
+
+### What does NOT fix it (don't waste time)
+
+- `docker restart` — helps briefly, recurs.
+- Upgrading the xandikos image / dulwich — reduces but does not eliminate.
+- **`git gc` — makes it WORSE.** Packing + deltifying the objects adds *more* shared-handle
+  seeking (delta-base resolution). Do not run it. See "Durability" below.
+- `git repack --depth=0 --window=0` (no-delta pack) — still races on the shared pack handle.
+
+### The fix: convert the store to all-loose objects
+
+With every object stored **loose** (one file per object), dulwich opens each object independently —
+there is no shared file handle to race, so the bug cannot trigger.
+
+Set `STORE` to the affected store and run:
+
+```bash
+STORE=/home/parham/Downloads/xandikos/user/contacts/addressbook   # or .../user/calendars/calendar
+
+# 1. Stop xandikos so nothing reads the store mid-swap (brief downtime, data is safe)
+docker stop xandikos-xandikos-1
+
+# 2. Explode every pack into loose objects
+cd "$STORE"
+mkdir -p /tmp/packbak
+mv .git/objects/pack/pack-*.pack .git/objects/pack/pack-*.idx .git/objects/pack/pack-*.rev /tmp/packbak/ 2>/dev/null
+git unpack-objects -r < /tmp/packbak/pack-*.pack
+
+# 3. Sanity check: clean, and no packs remain
+git fsck --full | grep -v dangling        # expect no output
+ls .git/objects/pack/                      # expect empty
+
+# 4. Start xandikos again
+docker start xandikos-xandikos-1
+```
+
+Then on the client, let it re-sync (or in DAVx5 pull-to-refresh). It should complete with no 500s.
+
+### Durability — keep it fixed
+
+Loose objects only stay loose if **nothing ever repacks the store**. Harden it once:
+
+```bash
+cd "$STORE"
+git config gc.auto 0
+git config gc.autoPackLimit 0
+git config gc.autoDetach false
+```
+
+Rules going forward:
+
+- **Never run `git gc` or `git repack`** on a xandikos store. This is the #1 way to reintroduce the bug.
+- Loose objects accumulate slowly over time. **That is fine — do not "clean it up".**
+- Optional belt-and-suspenders: lower the client's sync frequency / parallelism.
+- The permanent fix is upstream in dulwich; this is a workaround.
+
+### Verify health (anytime)
+
+```bash
+docker logs --since 10m xandikos-xandikos-1 | grep -c zlib.error   # want: 0
+docker logs --since 10m xandikos-nginx-1    | grep -c '" 500 '     # want: 0
+```
+
+### Note on the pinned image
+
+`docker-compose.yml` pins the `xandikos` image by digest (not `:latest`) for reproducibility.
+Heads-up: the `ghcr.io/jelmer/xandikos` **`vX.Y.Z` release tags are stale** (e.g. `v0.3.0` is a
+downgrade). The newest code lives on the moving `:latest` tag, so to upgrade, pull `:latest`, read
+its new digest, and pin that digest.

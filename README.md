@@ -74,6 +74,12 @@ openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 3
 
 [Reference](https://stackoverflow.com/questions/10175812/how-to-generate-a-self-signed-ssl-certificate-using-openssl)
 
+## Troubleshooting
+
+See [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md) — notably the fix for `500` on `REPORT` /
+stuck DAVx5 sync (dulwich packfile concurrency bug; fix = convert the store to all-loose objects
+and never `git gc` it).
+
 ## Repositories
 
 - [addressbook](https://github.com/parham-alvani/addressbook)
