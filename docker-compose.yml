@@ -11,7 +11,9 @@ services:
         condition: service_healthy
     restart: unless-stopped
   xandikos:
-    image: ghcr.io/jelmer/xandikos:latest
+    # Pinned 2026-07-20: xandikos 0.4.4 / dulwich 1.2.11 (upgrade from dulwich 1.2.6
+    # to pick up git-store concurrency fixes for the zlib REPORT 500s). Was `:latest`.
+    image: ghcr.io/jelmer/xandikos:latest@sha256:6c0301123d32e26c2915f48081ffc84c7678e80c15692dbf7f1c5b3e45191bfb
     volumes:
       - .:/data:rw
     environment:
