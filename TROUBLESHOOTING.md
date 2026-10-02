@@ -103,3 +103,25 @@ docker logs --since 10m xandikos-nginx-1    | grep -c '" 500 '     # want: 0
 Heads-up: the `ghcr.io/jelmer/xandikos` **`vX.Y.Z` release tags are stale** (e.g. `v0.3.0` is a
 downgrade). The newest code lives on the moving `:latest` tag, so to upgrade, pull `:latest`, read
 its new digest, and pin that digest.
+
+## DAVx5: "HTTP server error – Received multi-get response without data"
+
+### Symptom
+
+DAVx5 shows a sync-problem notification for the `main` address book (or the calendar) with that text. The debug page names the remote resource: `.../user/contacts/addressbook/push-subscriptions.json` (or any other non-`.vcf` / non-`.ics` file). Every sync fails the same way; the server log shows a `REPORT` answered with `207` and only a few hundred bytes right after the `sync-collection` report.
+
+### Root cause
+
+Xandikos lists a collection straight from the **git tree**: every committed blob is a member, whatever its name. Its WebDAV-Push store writes `push-subscriptions.json` into the collection directory on the filesystem only, which is harmless, but a `git add -A` or `git add .` in `user/contacts/addressbook` or `user/calendars/calendar` commits it, and from then on `sync-collection` reports it as a changed member, DAVx5 multigets it, gets an etag with no `address-data`, and aborts the whole sync. Seen 2026-10-02 after a "chore: update push configuration" commit; the same happens with any helper script left in the collection (`rename_vcf_by_uid.py` sat there for a year and only stayed quiet because it never changed).
+
+### The fix
+
+```sh
+cd ~/Downloads/xandikos/user/contacts/addressbook   # and user/calendars/calendar
+git rm --cached push-subscriptions.json              # keep the file on disk, xandikos reads it from there
+git commit -m "drop push-subscriptions.json from the tree"
+```
+
+`.git/info/exclude` in both collection repos now lists `push-subscriptions.json`, `.push-subscriptions.*.tmp` and `push-subscription-index.json`, so a stray `git add -A` no longer picks them up (a `.gitignore` would itself become a member, which is why it is `info/exclude`). Keep helper scripts outside the collections; `rename_vcf_by_uid.py` now lives in the repo root.
+
+Verify from anywhere: a `PROPFIND` with `Depth: 1` on the collection must list only `.vcf` / `.ics` hrefs, and the next `sync-collection` reports the removed names as `404`, which DAVx5 handles as deletions. No restart needed.
