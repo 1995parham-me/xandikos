@@ -138,7 +138,7 @@ dulwich's `_GitFile.close()` renames `index.lock` → `index` and then, in `fina
 
 ### The fix
 
-`patches/sitecustomize.py` (mounted read-only and put first on `PYTHONPATH` in `docker-compose.yml`) monkeypatches `close()` so it only calls `abort()` when the rename fails. Check that it's active: `docker logs xandikos-xandikos-1 2>&1 | grep sitecustomize` should print `patched dulwich _GitFile.close lock race`. `patches/race_test.py` reproduces the race (`docker exec -e PYTHONPATH=/code xandikos-xandikos-1 python3 /data/patches/race_test.py` vs `-e PYTHONPATH=/data/patches:/code`). Remove the patch once upstream dulwich is fixed.
+`patches/sitecustomize.py` (mounted read-only and put first on `PYTHONPATH` in `docker-compose.yml`) monkeypatches `close()` so it only calls `abort()` when the rename fails. Check that it's active: `docker logs xandikos-xandikos-1 2>&1 | grep sitecustomize` should print `patched dulwich _GitFile.close lock race`. `patches/race_test.py` reproduces the race (`docker exec -e PYTHONPATH=/code xandikos-xandikos-1 python3 /data/patches/race_test.py` vs `-e PYTHONPATH=/data/patches:/code`). Upstream fix: https://github.com/jelmer/dulwich/pull/2490. Remove the patch once a dulwich release containing it is in the pinned image.
 
 ### If it happens anyway
 
