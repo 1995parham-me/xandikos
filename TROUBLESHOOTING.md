@@ -125,3 +125,21 @@ git commit -m "drop push-subscriptions.json from the tree"
 `.git/info/exclude` in both collection repos now lists `push-subscriptions.json`, `.push-subscriptions.*.tmp` and `push-subscription-index.json`, so a stray `git add -A` no longer picks them up (a `.gitignore` would itself become a member, which is why it is `info/exclude`). Keep helper scripts outside the collections; `rename_vcf_by_uid.py` now lives in the repo root.
 
 Verify from anywhere: a `PROPFIND` with `Depth: 1` on the collection must list only `.vcf` / `.ics` hrefs, and the next `sync-collection` reports the removed names as `404`, which DAVx5 handles as deletions. No restart needed.
+
+## Phantom `MM` diff in `git status` / a contact edit silently reverted
+
+### Symptom
+
+`git status` in the addressbook shows a `.vcf` as both staged and unstaged (`MM`), with each diff the mirror image of the other, while `git diff HEAD` is empty. In `docker logs` a `PUT` returned `500` with `FileNotFoundError: ... '.git/index.lock' -> '.git/index'`. Worse case: a later xandikos commit "Modified A.vcf" also changes B.vcf back to an older version.
+
+### Root cause
+
+dulwich's `_GitFile.close()` renames `index.lock` → `index` and then, in `finally`, calls `abort()`, which `os.remove`s `index.lock`. After the rename another request thread may already hold a *new* `index.lock`, and it gets deleted. That thread's commit lands in HEAD but its index write fails, so `.git/index` stays stale. xandikos builds every commit from the index, so the **next PUT reverts the earlier change**. Concurrent DAVx5 PUT bursts trigger it. It happened 9 times from June to October 2026, and all were recovered. Still unfixed upstream as of dulwich 1.2.17.
+
+### The fix
+
+`patches/sitecustomize.py` (mounted read-only and put first on `PYTHONPATH` in `docker-compose.yml`) monkeypatches `close()` so it only calls `abort()` when the rename fails. Check that it's active: `docker logs xandikos-xandikos-1 2>&1 | grep sitecustomize` should print `patched dulwich _GitFile.close lock race`. `patches/race_test.py` reproduces the race (`docker exec -e PYTHONPATH=/code xandikos-xandikos-1 python3 /data/patches/race_test.py` vs `-e PYTHONPATH=/data/patches:/code`). Remove the patch once upstream dulwich is fixed.
+
+### If it happens anyway
+
+Confirm `git diff HEAD` is empty for the file, then `git restore --staged <file>`. To find collateral reverts, look for xandikos `Modified X.vcf` commits that touch any file other than X.

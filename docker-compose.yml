@@ -16,7 +16,11 @@ services:
     image: ghcr.io/jelmer/xandikos:latest@sha256:6c0301123d32e26c2915f48081ffc84c7678e80c15692dbf7f1c5b3e45191bfb
     volumes:
       - .:/data:rw
+      # Hotfix for dulwich _GitFile.close() lock race that leaves .git/index stale
+      # and makes the next PUT silently revert a contact. See patches/sitecustomize.py.
+      - ./patches/sitecustomize.py:/patches/sitecustomize.py:ro
     environment:
+      - PYTHONPATH=/patches:/code
       - AUTOCREATE=true
       - DEFAULTS=true
     healthcheck:
